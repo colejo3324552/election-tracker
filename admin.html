@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Election Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body class="bg-slate-900 min-h-screen font-sans text-slate-100 flex items-center justify-center p-4">
+    
+    <div class="w-full max-w-md bg-slate-800 border border-slate-700 shadow-xl p-8 rounded-lg">
+        <h1 class="text-2xl font-bold text-white mb-6 flex items-center border-b border-slate-700 pb-4">
+            <span class="bg-red-700 text-white w-6 h-6 inline-flex items-center justify-center rounded-full text-xs mr-3">A</span>
+            Admin Control Panel
+        </h1>
+        
+        <div class="mb-6">
+            <label class="block text-sm font-bold text-slate-400 mb-2 uppercase">Select Candidate</label>
+            <select id="candidateSelect" class="w-full p-3 bg-slate-900 border border-slate-700 rounded text-white focus:border-blue-500 outline-none">
+                <option value="cole">Cole Fennes (Blue)</option>
+                <option value="konnor">Konnor Fultz (Yellow)</option>
+                <option value="walker">Walker LeVault (Green)</option>
+            </select>
+        </div>
+
+        <div class="mb-8">
+            <label class="block text-sm font-bold text-slate-400 mb-2 uppercase">Votes to Add</label>
+            <input type="number" id="voteAmount" min="1" value="1" class="w-full p-3 bg-slate-900 border border-slate-700 rounded text-white font-mono focus:border-blue-500 outline-none">
+        </div>
+
+        <button onclick="addVotes()" class="w-full bg-blue-700 hover:bg-blue-600 text-white p-4 rounded font-bold uppercase tracking-widest transition-colors mb-4">
+            Submit Votes to Live Server
+        </button>
+
+        <button onclick="resetVotes()" class="w-full bg-transparent border border-red-900 text-red-500 hover:bg-red-900/30 p-3 rounded text-sm font-bold uppercase tracking-widest transition-colors">
+            Reset All Votes
+        </button>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBGohAbx0I493mUqDnKkwTHLAd0VUiNCVY",
+            authDomain: "election-tracker-98b3b.firebaseapp.com",
+            databaseURL: "https://election-tracker-98b3b-default-rtdb.firebaseio.com",
+            projectId: "election-tracker-98b3b",
+            storageBucket: "election-tracker-98b3b.firebasestorage.app",
+            messagingSenderId: "252533149255",
+            appId: "1:252533149255:web:e58f4f6b06f363ad7b2b62"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const votesRef = db.ref('electionVotes');
+
+        // Keep local state synced so we can accurately add to it
+        let currentVotes = { cole: 0, konnor: 0, walker: 0 };
+        votesRef.on('value', (snapshot) => {
+            if (snapshot.exists()) {
+                currentVotes = snapshot.val();
+            }
+        });
+
+        function addVotes() {
+            const candidate = document.getElementById('candidateSelect').value;
+            const amount = parseInt(document.getElementById('voteAmount').value);
+
+            if (isNaN(amount) || amount < 1) return alert("Enter valid amount");
+
+            // Update the specific candidate's count in the database
+            currentVotes[candidate] += amount;
+            votesRef.set(currentVotes).then(() => {
+                // Flash green to show success
+                document.body.style.backgroundColor = '#064e3b';
+                setTimeout(() => document.body.style.backgroundColor = '', 300);
+                document.getElementById('voteAmount').value = 1;
+            });
+        }
+
+        function resetVotes() {
+            if (confirm("Reset the live public database to zero?")) {
+                votesRef.set({ cole: 0, konnor: 0, walker: 0 });
+            }
+        }
+    </script>
+</body>
+</html>
