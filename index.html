@@ -3,153 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Official Election Tracker</title>
+    <title>Live Election Results</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase Libraries -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body class="bg-slate-100 min-h-screen font-sans text-slate-900 pb-12">
-
-    <!-- Presidential Header -->
     <header class="bg-blue-950 text-white py-6 shadow-md border-b-4 border-red-700">
-        <div class="max-w-4xl mx-auto px-4 text-center">
-            <div class="text-yellow-400 text-xl tracking-widest mb-2">★ ★ ★</div>
-            <h1 class="text-3xl md:text-4xl font-serif font-bold uppercase tracking-wider mb-1">
-                Official Election Returns
-            </h1>
-            <p class="text-blue-200 text-sm tracking-widest uppercase">Live Results Dashboard</p>
+        <div class="max-w-5xl mx-auto px-4 text-center">
+            <div class="text-yellow-400 text-2xl tracking-widest mb-2">★ ★ ★</div>
+            <h1 class="text-4xl md:text-5xl font-serif font-bold uppercase tracking-wider mb-2">Official Election Returns</h1>
+            <p class="text-blue-200 text-base tracking-widest uppercase">Live Public Dashboard</p>
         </div>
     </header>
     
-    <div class="max-w-3xl mx-auto mt-8 px-4">
-        <div class="bg-white border border-slate-200 shadow-xl p-6 md:p-10 relative">
-            
-            <!-- Ballot Entry Area -->
-            <div class="mb-10 pb-8 border-b border-slate-200">
-                <h2 class="text-2xl font-serif font-bold text-blue-950 mb-6 flex items-center">
-                    <span class="bg-blue-950 text-white w-8 h-8 inline-flex items-center justify-center rounded-full text-sm mr-3">1</span>
-                    Record Ballots
-                </h2>
-                
-                <div class="flex flex-col md:flex-row gap-5 items-end">
-                    <div class="flex-1 w-full">
-                        <label class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Candidate</label>
-                        <select id="candidateSelect" class="w-full p-3 border-2 border-slate-300 rounded-none bg-slate-50 text-slate-900 focus:outline-none focus:border-blue-800 transition-colors">
-                            <option value="cole">Cole Fennes (Blue)</option>
-                            <option value="konnor">Konnor Fultz (Yellow)</option>
-                            <option value="walker">Walker LeVault (Green)</option>
-                        </select>
-                    </div>
-                    <div class="flex-1 w-full">
-                        <label class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Vote Count</label>
-                        <input type="number" id="voteAmount" min="1" value="1" class="w-full p-3 border-2 border-slate-300 rounded-none bg-slate-50 text-slate-900 focus:outline-none focus:border-blue-800 transition-colors font-mono text-lg">
-                    </div>
-                    <button onclick="addVotes()" class="w-full md:w-auto bg-blue-900 text-white px-8 py-3 hover:bg-blue-800 transition-colors font-bold uppercase tracking-widest border border-blue-950 shadow-sm">
-                        Submit
-                    </button>
+    <div class="max-w-4xl mx-auto mt-8 px-4">
+        <div class="bg-white border border-slate-200 shadow-2xl p-8 md:p-12 relative">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-end mb-10 border-b-2 border-slate-100 pb-6">
+                <h2 class="text-3xl font-serif font-bold text-blue-950">Live Standings</h2>
+                <div class="mt-4 md:mt-0 text-right">
+                    <p class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-1">Total Ballots Cast</p>
+                    <p class="text-4xl font-mono font-bold text-slate-800" id="totalVotes">0</p>
                 </div>
             </div>
 
-            <!-- Results Area -->
-            <div>
-                <div class="flex flex-col md:flex-row md:justify-between md:items-end mb-8">
-                    <h2 class="text-2xl font-serif font-bold text-blue-950 flex items-center">
-                        <span class="bg-red-700 text-white w-8 h-8 inline-flex items-center justify-center rounded-full text-sm mr-3">2</span>
-                        Live Standings
-                    </h2>
-                    <div class="mt-3 md:mt-0 text-right">
-                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Total Ballots Cast</p>
-                        <p class="text-2xl font-mono font-bold text-slate-800" id="totalVotes">0</p>
+            <!-- Candidate Bars -->
+            <div id="candidates-container">
+                <!-- Cole -->
+                <div class="mb-10">
+                    <div class="flex justify-between items-baseline mb-3">
+                        <span class="font-serif font-bold text-3xl text-slate-800">Cole Fennes</span>
+                        <span class="text-xl font-bold text-slate-700 font-mono" id="coleText">0 votes (0.0%)</span>
+                    </div>
+                    <div class="w-full bg-slate-200 h-12 border-2 border-slate-300">
+                        <div id="coleBar" class="bg-blue-700 h-full transition-all duration-700 ease-out" style="width: 0%"></div>
                     </div>
                 </div>
-
-                <!-- Cole Fennes -->
-                <div class="mb-8">
-                    <div class="flex justify-between items-baseline mb-2 border-b border-slate-100 pb-2">
-                        <span class="font-serif font-bold text-xl text-slate-800">Cole Fennes</span>
-                        <span class="text-base font-bold text-slate-700 font-mono" id="coleText">0 votes (0.0%)</span>
+                <!-- Konnor -->
+                <div class="mb-10">
+                    <div class="flex justify-between items-baseline mb-3">
+                        <span class="font-serif font-bold text-3xl text-slate-800">Konnor Fultz</span>
+                        <span class="text-xl font-bold text-slate-700 font-mono" id="konnorText">0 votes (0.0%)</span>
                     </div>
-                    <div class="w-full bg-slate-200 h-8 border border-slate-300">
-                        <div id="coleBar" class="bg-blue-700 h-full transition-all duration-700 ease-out flex items-center justify-end pr-2" style="width: 0%"></div>
-                    </div>
-                </div>
-
-                <!-- Konnor Fultz -->
-                <div class="mb-8">
-                    <div class="flex justify-between items-baseline mb-2 border-b border-slate-100 pb-2">
-                        <span class="font-serif font-bold text-xl text-slate-800">Konnor Fultz</span>
-                        <span class="text-base font-bold text-slate-700 font-mono" id="konnorText">0 votes (0.0%)</span>
-                    </div>
-                    <div class="w-full bg-slate-200 h-8 border border-slate-300">
-                        <div id="konnorBar" class="bg-amber-400 h-full transition-all duration-700 ease-out flex items-center justify-end pr-2" style="width: 0%"></div>
+                    <div class="w-full bg-slate-200 h-12 border-2 border-slate-300">
+                        <div id="konnorBar" class="bg-amber-400 h-full transition-all duration-700 ease-out" style="width: 0%"></div>
                     </div>
                 </div>
-
-                <!-- Walker LeVault -->
-                <div class="mb-8">
-                    <div class="flex justify-between items-baseline mb-2 border-b border-slate-100 pb-2">
-                        <span class="font-serif font-bold text-xl text-slate-800">Walker LeVault</span>
-                        <span class="text-base font-bold text-slate-700 font-mono" id="walkerText">0 votes (0.0%)</span>
+                <!-- Walker -->
+                <div class="mb-10">
+                    <div class="flex justify-between items-baseline mb-3">
+                        <span class="font-serif font-bold text-3xl text-slate-800">Walker LeVault</span>
+                        <span class="text-xl font-bold text-slate-700 font-mono" id="walkerText">0 votes (0.0%)</span>
                     </div>
-                    <div class="w-full bg-slate-200 h-8 border border-slate-300">
-                        <div id="walkerBar" class="bg-emerald-700 h-full transition-all duration-700 ease-out flex items-center justify-end pr-2" style="width: 0%"></div>
+                    <div class="w-full bg-slate-200 h-12 border-2 border-slate-300">
+                        <div id="walkerBar" class="bg-emerald-700 h-full transition-all duration-700 ease-out" style="width: 0%"></div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Footer Reset -->
-            <div class="mt-12 pt-6 border-t border-slate-200 text-center">
-                <button onclick="resetVotes()" class="text-xs font-bold text-slate-400 hover:text-red-700 uppercase tracking-widest transition-colors">
-                    [ Clear Board & Reset Election ]
-                </button>
             </div>
         </div>
     </div>
 
     <script>
-        // Check if there are saved votes in localStorage
-        let savedData = localStorage.getItem('presidentialElectionVotes');
-        let votes = savedData ? JSON.parse(savedData) : {
-            cole: 0,
-            konnor: 0,
-            walker: 0
+        const firebaseConfig = {
+            apiKey: "AIzaSyBGohAbx0I493mUqDnKkwTHLAd0VUiNCVY",
+            authDomain: "election-tracker-98b3b.firebaseapp.com",
+            databaseURL: "https://election-tracker-98b3b-default-rtdb.firebaseio.com",
+            projectId: "election-tracker-98b3b",
+            storageBucket: "election-tracker-98b3b.firebasestorage.app",
+            messagingSenderId: "252533149255",
+            appId: "1:252533149255:web:e58f4f6b06f363ad7b2b62"
         };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-        window.onload = function() {
-            setTimeout(updateUI, 50);
-        };
+        // Listen for live updates from the database
+        db.ref('electionVotes').on('value', (snapshot) => {
+            const votes = snapshot.val() || { cole: 0, konnor: 0, walker: 0 };
+            updateUI(votes);
+        });
 
-        function addVotes() {
-            const candidate = document.getElementById('candidateSelect').value;
-            const amountInput = document.getElementById('voteAmount').value;
-            const amount = parseInt(amountInput);
-
-            if (isNaN(amount) || amount < 1) {
-                alert("Please enter a valid ballot amount greater than 0.");
-                return;
-            }
-
-            votes[candidate] += amount;
-            localStorage.setItem('presidentialElectionVotes', JSON.stringify(votes));
-            updateUI();
-            
-            document.getElementById('voteAmount').value = 1;
-        }
-
-        function resetVotes() {
-            if (confirm("Are you sure you want to reset all official returns to zero?")) {
-                votes = { cole: 0, konnor: 0, walker: 0 };
-                localStorage.setItem('presidentialElectionVotes', JSON.stringify(votes));
-                updateUI();
-            }
-        }
-
-        function updateUI() {
-            const total = votes.cole + votes.konnor + votes.walker;
+        function updateUI(votes) {
+            const total = (votes.cole || 0) + (votes.konnor || 0) + (votes.walker || 0);
             document.getElementById('totalVotes').innerText = total.toLocaleString();
 
             const candidates = ['cole', 'konnor', 'walker'];
-            
             candidates.forEach(cand => {
-                const candidateVotes = votes[cand];
+                const candidateVotes = votes[cand] || 0;
                 const percentage = total === 0 ? 0 : ((candidateVotes / total) * 100).toFixed(1);
                 
                 document.getElementById(`${cand}Text`).innerText = `${candidateVotes.toLocaleString()} votes (${percentage}%)`;
