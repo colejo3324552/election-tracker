@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Election Tracker</title>
+    <!-- Using Tailwind CSS via CDN for styling without needing extra files -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-4 md:p-8 font-sans">
+    <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-md p-6">
+        <h1 class="text-2xl font-bold text-center mb-6">Live Election Tracker</h1>
+
+        <!-- Vote Input Area -->
+        <div class="bg-gray-50 p-4 rounded-lg mb-8 border border-gray-200">
+            <h2 class="text-lg font-semibold mb-4">Record Votes</h2>
+            <div class="flex flex-col md:flex-row gap-4 items-end">
+                <div class="flex-1 w-full">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Candidate</label>
+                    <select id="candidateSelect" class="w-full p-2 border border-gray-300 rounded-md bg-white">
+                        <option value="cole">Cole Fennes (Blue)</option>
+                        <option value="konnor">Konnor Fultz (Yellow)</option>
+                        <option value="walker">Walker LeVault (Green)</option>
+                    </select>
+                </div>
+                <div class="flex-1 w-full">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Number of Votes</label>
+                    <input type="number" id="voteAmount" min="1" value="1" class="w-full p-2 border border-gray-300 rounded-md">
+                </div>
+                <button onclick="addVotes()" class="w-full md:w-auto bg-gray-800 text-white px-6 py-2 rounded-md hover:bg-gray-700 transition font-medium">
+                    Submit
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Area -->
+        <div>
+            <div class="flex justify-between items-end mb-4">
+                <h2 class="text-lg font-semibold">Current Standings</h2>
+                <p class="text-sm font-medium text-gray-600">Total Votes: <span id="totalVotes">0</span></p>
+            </div>
+
+            <!-- Cole Fennes -->
+            <div class="mb-5">
+                <div class="flex justify-between mb-1">
+                    <span class="font-bold text-gray-800">Cole Fennes</span>
+                    <span class="text-sm font-medium text-gray-600" id="coleText">0 votes (0%)</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-5">
+                    <div id="coleBar" class="bg-blue-500 h-5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Konnor Fultz -->
+            <div class="mb-5">
+                <div class="flex justify-between mb-1">
+                    <span class="font-bold text-gray-800">Konnor Fultz</span>
+                    <span class="text-sm font-medium text-gray-600" id="konnorText">0 votes (0%)</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-5">
+                    <div id="konnorBar" class="bg-yellow-400 h-5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Walker LeVault -->
+            <div class="mb-5">
+                <div class="flex justify-between mb-1">
+                    <span class="font-bold text-gray-800">Walker LeVault</span>
+                    <span class="text-sm font-medium text-gray-600" id="walkerText">0 votes (0%)</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-5">
+                    <div id="walkerBar" class="bg-green-500 h-5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Store current vote totals
+        let votes = {
+            cole: 0,
+            konnor: 0,
+            walker: 0
+        };
+
+        // Function to process new votes
+        function addVotes() {
+            const candidate = document.getElementById('candidateSelect').value;
+            const amountInput = document.getElementById('voteAmount').value;
+            const amount = parseInt(amountInput);
+
+            // Validate input
+            if (isNaN(amount) || amount < 1) {
+                alert("Please enter a valid vote amount greater than 0.");
+                return;
+            }
+
+            // Add votes and update the display
+            votes[candidate] += amount;
+            updateUI();
+            
+            // Optional: reset input to 1 after submitting
+            document.getElementById('voteAmount').value = 1;
+        }
+
+        // Function to recalculate percentages and animate bars
+        function updateUI() {
+            const total = votes.cole + votes.konnor + votes.walker;
+            document.getElementById('totalVotes').innerText = total.toLocaleString();
+
+            const candidates = ['cole', 'konnor', 'walker'];
+            
+            candidates.forEach(cand => {
+                const candidateVotes = votes[cand];
+                const percentage = total === 0 ? 0 : ((candidateVotes / total) * 100).toFixed(1);
+                
+                // Update text
+                document.getElementById(`${cand}Text`).innerText = `${candidateVotes.toLocaleString()} votes (${percentage}%)`;
+                
+                // Update progress bar width
+                document.getElementById(`${cand}Bar`).style.width = `${percentage}%`;
+            });
+        }
+    </script>
+</body>
+</html>
