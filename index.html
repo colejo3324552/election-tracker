@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Election Tracker</title>
-    <!-- Using Tailwind CSS via CDN for styling without needing extra files -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 p-4 md:p-8 font-sans">
@@ -73,37 +72,58 @@
                 </div>
             </div>
         </div>
+
+        <div class="mt-8 pt-4 border-t border-gray-200 text-center">
+            <button onclick="resetVotes()" class="text-sm text-red-600 hover:text-red-800 font-medium">
+                Reset All Votes
+            </button>
+        </div>
     </div>
 
     <script>
-        // Store current vote totals
-        let votes = {
+        // Check if there are saved votes in localStorage, otherwise start at 0
+        let savedData = localStorage.getItem('electionVotes');
+        let votes = savedData ? JSON.parse(savedData) : {
             cole: 0,
             konnor: 0,
             walker: 0
         };
 
-        // Function to process new votes
+        // Load the UI immediately when the page opens
+        window.onload = function() {
+            updateUI();
+        };
+
         function addVotes() {
             const candidate = document.getElementById('candidateSelect').value;
             const amountInput = document.getElementById('voteAmount').value;
             const amount = parseInt(amountInput);
 
-            // Validate input
             if (isNaN(amount) || amount < 1) {
                 alert("Please enter a valid vote amount greater than 0.");
                 return;
             }
 
-            // Add votes and update the display
+            // Add votes
             votes[candidate] += amount;
+            
+            // Save the new totals to localStorage
+            localStorage.setItem('electionVotes', JSON.stringify(votes));
+            
             updateUI();
             
-            // Optional: reset input to 1 after submitting
+            // Reset input field back to 1
             document.getElementById('voteAmount').value = 1;
         }
 
-        // Function to recalculate percentages and animate bars
+        function resetVotes() {
+            if (confirm("Are you sure you want to delete all votes and start over?")) {
+                votes = { cole: 0, konnor: 0, walker: 0 };
+                localStorage.setItem('electionVotes', JSON.stringify(votes));
+                updateUI();
+            }
+        }
+
         function updateUI() {
             const total = votes.cole + votes.konnor + votes.walker;
             document.getElementById('totalVotes').innerText = total.toLocaleString();
@@ -114,10 +134,7 @@
                 const candidateVotes = votes[cand];
                 const percentage = total === 0 ? 0 : ((candidateVotes / total) * 100).toFixed(1);
                 
-                // Update text
                 document.getElementById(`${cand}Text`).innerText = `${candidateVotes.toLocaleString()} votes (${percentage}%)`;
-                
-                // Update progress bar width
                 document.getElementById(`${cand}Bar`).style.width = `${percentage}%`;
             });
         }
