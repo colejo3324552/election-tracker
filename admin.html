@@ -17,10 +17,16 @@
         </h1>
         
         <div class="mb-6">
-            <label class="block text-sm font-bold text-slate-400 mb-2 uppercase">Select Candidate</label>
+            <label class="block text-sm font-bold text-slate-400 mb-2 uppercase">Select Candidate & Race</label>
             <select id="candidateSelect" class="w-full p-3 bg-slate-900 border border-slate-700 rounded text-white focus:border-blue-500 outline-none">
-                <option value="cole">Cole Fennes (Blue)</option>
-                <option value="konnor">Konnor Fultz (Yellow)</option>
+                <optgroup label="Presidential">
+                    <option value="cole">Cole Fennes (Blue)</option>
+                    <option value="konnor">Konnor Fultz (Yellow)</option>
+                </optgroup>
+                <optgroup label="Secretary of State">
+                    <option value="walker_sos">Walker LeVault (Green)</option>
+                    <option value="abstain_sos">Abstain (Gray)</option>
+                </optgroup>
             </select>
         </div>
 
@@ -52,14 +58,17 @@
         const db = firebase.database();
         const votesRef = db.ref('electionVotes');
 
-        let currentVotes = { cole: 0, konnor: 0 };
+        let currentVotes = { cole: 0, konnor: 0, walker_sos: 0, abstain_sos: 1 };
+        
         votesRef.on('value', (snapshot) => {
             if (snapshot.exists()) {
                 currentVotes = snapshot.val();
                 
-                // Safety check in case Walker's old votes are still in the database
+                // Ensure default values exist if they are missing in the database
                 if (!currentVotes.cole) currentVotes.cole = 0;
                 if (!currentVotes.konnor) currentVotes.konnor = 0;
+                if (!currentVotes.walker_sos) currentVotes.walker_sos = 0;
+                if (currentVotes.abstain_sos === undefined) currentVotes.abstain_sos = 1;
             }
         });
 
@@ -71,11 +80,7 @@
 
             currentVotes[candidate] += amount;
             
-            // Re-save without Walker's data
-            votesRef.set({
-                cole: currentVotes.cole,
-                konnor: currentVotes.konnor
-            }).then(() => {
+            votesRef.set(currentVotes).then(() => {
                 document.body.style.backgroundColor = '#064e3b';
                 setTimeout(() => document.body.style.backgroundColor = '', 300);
                 document.getElementById('voteAmount').value = 1;
@@ -83,8 +88,8 @@
         }
 
         function resetVotes() {
-            if (confirm("Reset the live public database to zero?")) {
-                votesRef.set({ cole: 0, konnor: 0 });
+            if (confirm("Reset the live public database? This will set Abstain to 1 and all others to 0.")) {
+                votesRef.set({ cole: 0, konnor: 0, walker_sos: 0, abstain_sos: 1 });
             }
         }
     </script>
