@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Election Results</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase Libraries -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
@@ -28,7 +27,6 @@
                 </div>
             </div>
 
-            <!-- Candidate Bars -->
             <div id="candidates-container">
                 <!-- Cole -->
                 <div class="mb-10">
@@ -50,16 +48,6 @@
                         <div id="konnorBar" class="bg-amber-400 h-full transition-all duration-700 ease-out" style="width: 0%"></div>
                     </div>
                 </div>
-                <!-- Walker -->
-                <div class="mb-10">
-                    <div class="flex justify-between items-baseline mb-3">
-                        <span class="font-serif font-bold text-3xl text-slate-800">Walker LeVault</span>
-                        <span class="text-xl font-bold text-slate-700 font-mono" id="walkerText">0 votes (0.0%)</span>
-                    </div>
-                    <div class="w-full bg-slate-200 h-12 border-2 border-slate-300">
-                        <div id="walkerBar" class="bg-emerald-700 h-full transition-all duration-700 ease-out" style="width: 0%"></div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -77,17 +65,16 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Listen for live updates from the database
         db.ref('electionVotes').on('value', (snapshot) => {
-            const votes = snapshot.val() || { cole: 0, konnor: 0, walker: 0 };
+            const votes = snapshot.val() || { cole: 0, konnor: 0 };
             updateUI(votes);
         });
 
         function updateUI(votes) {
-            const total = (votes.cole || 0) + (votes.konnor || 0) + (votes.walker || 0);
+            const total = (votes.cole || 0) + (votes.konnor || 0);
             document.getElementById('totalVotes').innerText = total.toLocaleString();
 
-            const candidates = ['cole', 'konnor', 'walker'];
+            const candidates = ['cole', 'konnor'];
             candidates.forEach(cand => {
                 const candidateVotes = votes[cand] || 0;
                 const percentage = total === 0 ? 0 : ((candidateVotes / total) * 100).toFixed(1);
