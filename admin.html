@@ -21,7 +21,6 @@
             <select id="candidateSelect" class="w-full p-3 bg-slate-900 border border-slate-700 rounded text-white focus:border-blue-500 outline-none">
                 <option value="cole">Cole Fennes (Blue)</option>
                 <option value="konnor">Konnor Fultz (Yellow)</option>
-                <option value="walker">Walker LeVault (Green)</option>
             </select>
         </div>
 
@@ -53,11 +52,14 @@
         const db = firebase.database();
         const votesRef = db.ref('electionVotes');
 
-        // Keep local state synced so we can accurately add to it
-        let currentVotes = { cole: 0, konnor: 0, walker: 0 };
+        let currentVotes = { cole: 0, konnor: 0 };
         votesRef.on('value', (snapshot) => {
             if (snapshot.exists()) {
                 currentVotes = snapshot.val();
+                
+                // Safety check in case Walker's old votes are still in the database
+                if (!currentVotes.cole) currentVotes.cole = 0;
+                if (!currentVotes.konnor) currentVotes.konnor = 0;
             }
         });
 
@@ -67,10 +69,13 @@
 
             if (isNaN(amount) || amount < 1) return alert("Enter valid amount");
 
-            // Update the specific candidate's count in the database
             currentVotes[candidate] += amount;
-            votesRef.set(currentVotes).then(() => {
-                // Flash green to show success
+            
+            // Re-save without Walker's data
+            votesRef.set({
+                cole: currentVotes.cole,
+                konnor: currentVotes.konnor
+            }).then(() => {
                 document.body.style.backgroundColor = '#064e3b';
                 setTimeout(() => document.body.style.backgroundColor = '', 300);
                 document.getElementById('voteAmount').value = 1;
@@ -79,7 +84,7 @@
 
         function resetVotes() {
             if (confirm("Reset the live public database to zero?")) {
-                votesRef.set({ cole: 0, konnor: 0, walker: 0 });
+                votesRef.set({ cole: 0, konnor: 0 });
             }
         }
     </script>
