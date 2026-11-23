@@ -28,24 +28,54 @@
             </div>
 
             <div id="candidates-container">
-                <!-- Cole -->
-                <div class="mb-10">
+                <!-- Presidential Race -->
+                <h3 class="text-2xl font-serif font-bold text-slate-800 mb-6 uppercase tracking-wide">Presidential</h3>
+                
+                <div class="mb-10 pl-4 border-l-4 border-blue-900">
                     <div class="flex justify-between items-baseline mb-3">
-                        <span class="font-serif font-bold text-3xl text-slate-800">Cole Fennes</span>
+                        <span class="font-serif font-bold text-2xl text-slate-800">Cole Fennes</span>
                         <span class="text-xl font-bold text-slate-700 font-mono" id="coleText">0 votes (0.0%)</span>
                     </div>
-                    <div class="w-full bg-slate-200 h-12 border-2 border-slate-300">
+                    <div class="w-full bg-slate-200 h-10 border-2 border-slate-300">
                         <div id="coleBar" class="bg-blue-700 h-full transition-all duration-700 ease-out" style="width: 0%"></div>
                     </div>
                 </div>
-                <!-- Konnor -->
-                <div class="mb-10">
+                
+                <div class="mb-12 pl-4 border-l-4 border-amber-500">
                     <div class="flex justify-between items-baseline mb-3">
-                        <span class="font-serif font-bold text-3xl text-slate-800">Konnor Fultz</span>
+                        <span class="font-serif font-bold text-2xl text-slate-800">Konnor Fultz</span>
                         <span class="text-xl font-bold text-slate-700 font-mono" id="konnorText">0 votes (0.0%)</span>
                     </div>
-                    <div class="w-full bg-slate-200 h-12 border-2 border-slate-300">
+                    <div class="w-full bg-slate-200 h-10 border-2 border-slate-300">
                         <div id="konnorBar" class="bg-amber-400 h-full transition-all duration-700 ease-out" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Secretary of State Race -->
+                <div class="mt-12 pt-8 border-t-2 border-slate-100">
+                    <div class="flex justify-between items-end mb-6">
+                        <h3 class="text-2xl font-serif font-bold text-slate-800 uppercase tracking-wide">Secretary of State</h3>
+                        <p class="text-sm font-bold text-slate-500 uppercase tracking-widest">Votes: <span id="sosTotal" class="font-mono text-lg text-slate-800">0</span></p>
+                    </div>
+                    
+                    <div class="mb-10 pl-4 border-l-4 border-emerald-600">
+                        <div class="flex justify-between items-baseline mb-3">
+                            <span class="font-serif font-bold text-2xl text-slate-800">Walker LeVault</span>
+                            <span class="text-xl font-bold text-slate-700 font-mono" id="walker_sosText">0 votes (0.0%)</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-10 border-2 border-slate-300">
+                            <div id="walker_sosBar" class="bg-emerald-600 h-full transition-all duration-700 ease-out" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-10 pl-4 border-l-4 border-slate-400">
+                        <div class="flex justify-between items-baseline mb-3">
+                            <span class="font-serif font-bold text-2xl text-slate-800">Abstain</span>
+                            <span class="text-xl font-bold text-slate-700 font-mono" id="abstain_sosText">1 votes (100.0%)</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-10 border-2 border-slate-300">
+                            <div id="abstain_sosBar" class="bg-slate-400 h-full transition-all duration-700 ease-out" style="width: 100%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -66,21 +96,42 @@
         const db = firebase.database();
 
         db.ref('electionVotes').on('value', (snapshot) => {
-            const votes = snapshot.val() || { cole: 0, konnor: 0 };
+            const votes = snapshot.val() || { cole: 0, konnor: 0, walker_sos: 0, abstain_sos: 1 };
             updateUI(votes);
         });
 
         function updateUI(votes) {
-            const total = (votes.cole || 0) + (votes.konnor || 0);
-            document.getElementById('totalVotes').innerText = total.toLocaleString();
+            // Presidential Math
+            const presTotal = (votes.cole || 0) + (votes.konnor || 0);
+            document.getElementById('totalVotes').innerText = presTotal.toLocaleString();
 
-            const candidates = ['cole', 'konnor'];
-            candidates.forEach(cand => {
+            const presCandidates = ['cole', 'konnor'];
+            presCandidates.forEach(cand => {
                 const candidateVotes = votes[cand] || 0;
-                const percentage = total === 0 ? 0 : ((candidateVotes / total) * 100).toFixed(1);
+                const percentage = presTotal === 0 ? 0 : ((candidateVotes / presTotal) * 100).toFixed(1);
                 
                 document.getElementById(`${cand}Text`).innerText = `${candidateVotes.toLocaleString()} votes (${percentage}%)`;
                 document.getElementById(`${cand}Bar`).style.width = `${percentage}%`;
+            });
+
+            // Secretary of State Math
+            // Ensure Abstain defaults to 1 if it's undefined
+            const abstainVotes = votes.abstain_sos !== undefined ? votes.abstain_sos : 1; 
+            const walkerVotes = votes.walker_sos || 0;
+            const sosTotal = walkerVotes + abstainVotes;
+            
+            document.getElementById('sosTotal').innerText = sosTotal.toLocaleString();
+
+            const sosCandidates = [
+                { id: 'walker_sos', count: walkerVotes }, 
+                { id: 'abstain_sos', count: abstainVotes }
+            ];
+            
+            sosCandidates.forEach(cand => {
+                const percentage = sosTotal === 0 ? 0 : ((cand.count / sosTotal) * 100).toFixed(1);
+                
+                document.getElementById(`${cand.id}Text`).innerText = `${cand.count.toLocaleString()} votes (${percentage}%)`;
+                document.getElementById(`${cand.id}Bar`).style.width = `${percentage}%`;
             });
         }
     </script>
