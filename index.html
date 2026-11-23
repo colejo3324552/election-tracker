@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Election Results</title>
+    <title>Final Election Results</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -12,15 +12,15 @@
     <header class="bg-blue-950 text-white py-6 shadow-md border-b-4 border-red-700">
         <div class="max-w-5xl mx-auto px-4 text-center">
             <div class="text-yellow-400 text-2xl tracking-widest mb-2">★ ★ ★</div>
-            <h1 class="text-4xl md:text-5xl font-serif font-bold uppercase tracking-wider mb-2">Official Election Returns</h1>
-            <p class="text-blue-200 text-base tracking-widest uppercase">Live Public Dashboard</p>
+            <h1 class="text-4xl md:text-5xl font-serif font-bold uppercase tracking-wider mb-2">Final Election Returns</h1>
+            <p class="text-blue-200 text-base tracking-widest uppercase">Official Results Dashboard</p>
         </div>
     </header>
     
     <div class="max-w-4xl mx-auto mt-8 px-4">
         <div class="bg-white border border-slate-200 shadow-2xl p-8 md:p-12 relative">
             <div class="flex flex-col md:flex-row md:justify-between md:items-end mb-10 border-b-2 border-slate-100 pb-6">
-                <h2 class="text-3xl font-serif font-bold text-blue-950">Live Standings</h2>
+                <h2 class="text-3xl font-serif font-bold text-blue-950">Final Standings</h2>
                 <div class="mt-4 md:mt-0 text-right">
                     <p class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-1">Total Ballots Cast</p>
                     <p class="text-4xl font-mono font-bold text-slate-800" id="totalVotes">0</p>
@@ -33,7 +33,10 @@
                 
                 <div class="mb-10 pl-4 border-l-4 border-blue-900">
                     <div class="flex justify-between items-baseline mb-3">
-                        <span class="font-serif font-bold text-2xl text-slate-800">Cole Fennes</span>
+                        <div class="flex items-center">
+                            <span class="font-serif font-bold text-2xl text-slate-800">Cole Fennes</span>
+                            <span id="coleBadge" class="hidden ml-3 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider">★ Projected Winner</span>
+                        </div>
                         <span class="text-xl font-bold text-slate-700 font-mono" id="coleText">0 votes (0.0%)</span>
                     </div>
                     <div class="w-full bg-slate-200 h-10 border-2 border-slate-300">
@@ -43,7 +46,10 @@
                 
                 <div class="mb-12 pl-4 border-l-4 border-amber-500">
                     <div class="flex justify-between items-baseline mb-3">
-                        <span class="font-serif font-bold text-2xl text-slate-800">Konnor Fultz</span>
+                        <div class="flex items-center">
+                            <span class="font-serif font-bold text-2xl text-slate-800">Konnor Fultz</span>
+                            <span id="konnorBadge" class="hidden ml-3 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider">★ Projected Winner</span>
+                        </div>
                         <span class="text-xl font-bold text-slate-700 font-mono" id="konnorText">0 votes (0.0%)</span>
                     </div>
                     <div class="w-full bg-slate-200 h-10 border-2 border-slate-300">
@@ -60,7 +66,10 @@
                     
                     <div class="mb-10 pl-4 border-l-4 border-emerald-600">
                         <div class="flex justify-between items-baseline mb-3">
-                            <span class="font-serif font-bold text-2xl text-slate-800">Walker LeVault</span>
+                            <div class="flex items-center">
+                                <span class="font-serif font-bold text-2xl text-slate-800">Walker LeVault</span>
+                                <span id="walker_sosBadge" class="hidden ml-3 text-xs font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider"></span>
+                            </div>
                             <span class="text-xl font-bold text-slate-700 font-mono" id="walker_sosText">0 votes (0.0%)</span>
                         </div>
                         <div class="w-full bg-slate-200 h-10 border-2 border-slate-300">
@@ -70,7 +79,10 @@
                     
                     <div class="mb-10 pl-4 border-l-4 border-slate-400">
                         <div class="flex justify-between items-baseline mb-3">
-                            <span class="font-serif font-bold text-2xl text-slate-800">Abstain</span>
+                            <div class="flex items-center">
+                                <span class="font-serif font-bold text-2xl text-slate-800">Abstain</span>
+                                <span id="abstain_sosBadge" class="hidden ml-3 text-xs font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider"></span>
+                            </div>
                             <span class="text-xl font-bold text-slate-700 font-mono" id="abstain_sosText">0 votes (0.0%)</span>
                         </div>
                         <div class="w-full bg-slate-200 h-10 border-2 border-slate-300">
@@ -101,22 +113,31 @@
         });
 
         function updateUI(votes) {
-            // Presidential Math
-            const presTotal = (votes.cole || 0) + (votes.konnor || 0);
+            // Presidential Math & Badges
+            const coleVotes = votes.cole || 0;
+            const konnorVotes = votes.konnor || 0;
+            const presTotal = coleVotes + konnorVotes;
+            
             document.getElementById('totalVotes').innerText = presTotal.toLocaleString();
 
             const presCandidates = ['cole', 'konnor'];
             presCandidates.forEach(cand => {
                 const candidateVotes = votes[cand] || 0;
                 const percentage = presTotal === 0 ? 0 : ((candidateVotes / presTotal) * 100).toFixed(1);
-                
                 document.getElementById(`${cand}Text`).innerText = `${candidateVotes.toLocaleString()} votes (${percentage}%)`;
                 document.getElementById(`${cand}Bar`).style.width = `${percentage}%`;
             });
 
-            // Secretary of State Math
-            const abstainVotes = votes.abstain_sos || 0; 
+            document.getElementById('coleBadge').classList.add('hidden');
+            document.getElementById('konnorBadge').classList.add('hidden');
+            if (presTotal > 0) {
+                if (coleVotes > konnorVotes) document.getElementById('coleBadge').classList.remove('hidden');
+                else if (konnorVotes > coleVotes) document.getElementById('konnorBadge').classList.remove('hidden');
+            }
+
+            // Secretary of State Math & Badges
             const walkerVotes = votes.walker_sos || 0;
+            const abstainVotes = votes.abstain_sos || 0; 
             const sosTotal = walkerVotes + abstainVotes;
             
             document.getElementById('sosTotal').innerText = sosTotal.toLocaleString();
@@ -128,10 +149,35 @@
             
             sosCandidates.forEach(cand => {
                 const percentage = sosTotal === 0 ? 0 : ((cand.count / sosTotal) * 100).toFixed(1);
-                
                 document.getElementById(`${cand.id}Text`).innerText = `${cand.count.toLocaleString()} votes (${percentage}%)`;
                 document.getElementById(`${cand.id}Bar`).style.width = `${percentage}%`;
             });
+
+            // Reset SOS Badges
+            const walkerBadge = document.getElementById('walker_sosBadge');
+            const abstainBadge = document.getElementById('abstain_sosBadge');
+            walkerBadge.className = "hidden ml-3 text-xs font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider";
+            abstainBadge.className = "hidden ml-3 text-xs font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider";
+
+            if (sosTotal > 0) {
+                if (walkerVotes > abstainVotes) {
+                    walkerBadge.innerText = "★ Projected Winner";
+                    walkerBadge.classList.add('bg-yellow-400', 'text-yellow-900');
+                    walkerBadge.classList.remove('hidden');
+                } else if (abstainVotes > walkerVotes) {
+                    abstainBadge.innerText = "★ Projected Winner";
+                    abstainBadge.classList.add('bg-yellow-400', 'text-yellow-900');
+                    abstainBadge.classList.remove('hidden');
+                } else if (walkerVotes === abstainVotes) {
+                    walkerBadge.innerText = "TIE";
+                    walkerBadge.classList.add('bg-slate-200', 'text-slate-600', 'border', 'border-slate-300');
+                    walkerBadge.classList.remove('hidden');
+                    
+                    abstainBadge.innerText = "TIE";
+                    abstainBadge.classList.add('bg-slate-200', 'text-slate-600', 'border', 'border-slate-300');
+                    abstainBadge.classList.remove('hidden');
+                }
+            }
         }
     </script>
 </body>
