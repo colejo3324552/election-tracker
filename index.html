@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Final Election Results</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body class="bg-slate-100 min-h-screen font-sans text-slate-900 pb-12">
     <header class="bg-blue-950 text-white py-8 shadow-lg border-b-8 border-red-700">
@@ -23,7 +21,7 @@
                 <h2 class="text-4xl md:text-5xl font-serif font-black text-blue-950">Final Standings</h2>
                 <div class="mt-6 md:mt-0 text-right">
                     <p class="text-lg font-extrabold text-slate-500 uppercase tracking-widest mb-2">Total Ballots Cast</p>
-                    <p class="text-5xl md:text-6xl font-mono font-black text-slate-800" id="totalVotes">0</p>
+                    <p class="text-5xl md:text-6xl font-mono font-black text-slate-800">15</p>
                 </div>
             </div>
 
@@ -35,12 +33,12 @@
                     <div class="flex justify-between items-baseline mb-4">
                         <div class="flex flex-col md:flex-row md:items-center">
                             <span class="font-serif font-black text-3xl md:text-4xl text-slate-900">Cole Fennes</span>
-                            <span id="coleBadge" class="hidden mt-2 md:mt-0 md:ml-4 bg-yellow-400 text-yellow-900 text-sm md:text-base font-black px-3 py-1.5 rounded-md shadow uppercase tracking-widest border-2 border-yellow-500">★ Projected Winner</span>
+                            <span class="mt-2 md:mt-0 md:ml-4 bg-yellow-400 text-yellow-900 text-sm md:text-base font-black px-3 py-1.5 rounded-md shadow uppercase tracking-widest border-2 border-yellow-500">★ Winner</span>
                         </div>
-                        <span class="text-2xl md:text-3xl font-black text-slate-700 font-mono" id="coleText">0 votes (0.0%)</span>
+                        <span class="text-2xl md:text-3xl font-black text-slate-700 font-mono">10 votes (66.7%)</span>
                     </div>
                     <div class="w-full bg-slate-200 h-12 md:h-16 border-4 border-slate-300">
-                        <div id="coleBar" class="bg-blue-700 h-full transition-all duration-700 ease-out" style="width: 0%"></div>
+                        <div class="bg-blue-700 h-full" style="width: 66.7%"></div>
                     </div>
                 </div>
                 
@@ -48,12 +46,11 @@
                     <div class="flex justify-between items-baseline mb-4">
                         <div class="flex flex-col md:flex-row md:items-center">
                             <span class="font-serif font-black text-3xl md:text-4xl text-slate-900">Konnor Fultz</span>
-                            <span id="konnorBadge" class="hidden mt-2 md:mt-0 md:ml-4 bg-yellow-400 text-yellow-900 text-sm md:text-base font-black px-3 py-1.5 rounded-md shadow uppercase tracking-widest border-2 border-yellow-500">★ Projected Winner</span>
                         </div>
-                        <span class="text-2xl md:text-3xl font-black text-slate-700 font-mono" id="konnorText">0 votes (0.0%)</span>
+                        <span class="text-2xl md:text-3xl font-black text-slate-700 font-mono">5 votes (33.3%)</span>
                     </div>
                     <div class="w-full bg-slate-200 h-12 md:h-16 border-4 border-slate-300">
-                        <div id="konnorBar" class="bg-amber-400 h-full transition-all duration-700 ease-out" style="width: 0%"></div>
+                        <div class="bg-amber-400 h-full" style="width: 33.3%"></div>
                     </div>
                 </div>
 
@@ -61,20 +58,36 @@
                 <div class="mt-16 pt-12 border-t-4 border-slate-200">
                     <div class="flex flex-col md:flex-row justify-between items-end mb-8">
                         <h3 class="text-3xl md:text-4xl font-serif font-black text-slate-800 uppercase tracking-wider">Secretary of State</h3>
-                        <p class="text-lg font-extrabold text-slate-500 uppercase tracking-widest mt-4 md:mt-0">Votes: <span id="sosTotal" class="font-mono text-2xl md:text-3xl text-slate-800">0</span></p>
+                        <p class="text-lg font-extrabold text-slate-500 uppercase tracking-widest mt-4 md:mt-0">Votes: <span class="font-mono text-2xl md:text-3xl text-slate-800">8</span></p>
                     </div>
                     
                     <div class="mb-14 pl-6 border-l-8 border-emerald-600">
                         <div class="flex justify-between items-baseline mb-4">
                             <div class="flex flex-col md:flex-row md:items-center">
                                 <span class="font-serif font-black text-3xl md:text-4xl text-slate-900">Walker LeVault</span>
-                                <span id="walker_sosBadge" class="hidden mt-2 md:mt-0 md:ml-4 text-sm md:text-base font-black px-3 py-1.5 rounded-md shadow uppercase tracking-widest border-2"></span>
+                                <span class="mt-2 md:mt-0 md:ml-4 bg-yellow-400 text-yellow-900 border-yellow-500 text-sm md:text-base font-black px-3 py-1.5 rounded-md shadow uppercase tracking-widest border-2">★ Appointed</span>
                             </div>
-                            <span class="text-2xl md:text-3xl font-black text-slate-700 font-mono" id="walker_sosText">0 votes (0.0%)</span>
+                            <span class="text-2xl md:text-3xl font-black text-slate-700 font-mono">4 votes (50.0%)</span>
                         </div>
                         <div class="w-full bg-slate-200 h-12 md:h-16 border-4 border-slate-300">
-                            <div id="walker_sosBar" class="bg-emerald-600 h-full transition-all duration-700 ease-out" style="width: 0%"></div>
+                            <div class="bg-emerald-600 h-full" style="width: 50.0%"></div>
                         </div>
                     </div>
                     
-                    <div class="mb-14 pl-6 border-l-8 border-slate-40
+                    <div class="mb-14 pl-6 border-l-8 border-slate-400">
+                        <div class="flex justify-between items-baseline mb-4">
+                            <div class="flex flex-col md:flex-row md:items-center">
+                                <span class="font-serif font-black text-3xl md:text-4xl text-slate-900">Abstain</span>
+                            </div>
+                            <span class="text-2xl md:text-3xl font-black text-slate-700 font-mono">4 votes (50.0%)</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-12 md:h-16 border-4 border-slate-300">
+                            <div class="bg-slate-400 h-full" style="width: 50.0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
