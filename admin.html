@@ -31,16 +31,21 @@
         </div>
 
         <div class="mb-8">
-            <label class="block text-sm font-bold text-slate-400 mb-2 uppercase">Votes to Add</label>
+            <label class="block text-sm font-bold text-slate-400 mb-2 uppercase">Amount to Adjust</label>
             <input type="number" id="voteAmount" min="1" value="1" class="w-full p-3 bg-slate-900 border border-slate-700 rounded text-white font-mono focus:border-blue-500 outline-none">
         </div>
 
-        <button onclick="addVotes()" class="w-full bg-blue-700 hover:bg-blue-600 text-white p-4 rounded font-bold uppercase tracking-widest transition-colors mb-4">
-            Submit Votes to Live Server
-        </button>
+        <div class="flex gap-4 mb-8">
+            <button onclick="addVotes()" class="flex-1 bg-blue-700 hover:bg-blue-600 text-white p-4 rounded font-bold uppercase tracking-widest transition-colors text-sm">
+                Add (+)
+            </button>
+            <button onclick="removeVotes()" class="flex-1 bg-orange-700 hover:bg-orange-600 text-white p-4 rounded font-bold uppercase tracking-widest transition-colors text-sm">
+                Remove (-)
+            </button>
+        </div>
 
         <button onclick="resetVotes()" class="w-full bg-transparent border border-red-900 text-red-500 hover:bg-red-900/30 p-3 rounded text-sm font-bold uppercase tracking-widest transition-colors">
-            Reset All Votes
+            Reset All Database to Zero
         </button>
     </div>
 
@@ -58,7 +63,7 @@
         const db = firebase.database();
         const votesRef = db.ref('electionVotes');
 
-        let currentVotes = { cole: 0, konnor: 0, walker_sos: 0, abstain_sos: 1 };
+        let currentVotes = { cole: 0, konnor: 0, walker_sos: 0, abstain_sos: 0 };
         
         votesRef.on('value', (snapshot) => {
             if (snapshot.exists()) {
@@ -68,7 +73,7 @@
                 if (!currentVotes.cole) currentVotes.cole = 0;
                 if (!currentVotes.konnor) currentVotes.konnor = 0;
                 if (!currentVotes.walker_sos) currentVotes.walker_sos = 0;
-                if (currentVotes.abstain_sos === undefined) currentVotes.abstain_sos = 1;
+                if (!currentVotes.abstain_sos) currentVotes.abstain_sos = 0;
             }
         });
 
@@ -81,15 +86,33 @@
             currentVotes[candidate] += amount;
             
             votesRef.set(currentVotes).then(() => {
+                // Flash green to show addition success
                 document.body.style.backgroundColor = '#064e3b';
                 setTimeout(() => document.body.style.backgroundColor = '', 300);
                 document.getElementById('voteAmount').value = 1;
             });
         }
 
+        function removeVotes() {
+            const candidate = document.getElementById('candidateSelect').value;
+            const amount = parseInt(document.getElementById('voteAmount').value);
+
+            if (isNaN(amount) || amount < 1) return alert("Enter valid amount");
+
+            // Math.max ensures votes never drop below 0
+            currentVotes[candidate] = Math.max(0, currentVotes[candidate] - amount);
+            
+            votesRef.set(currentVotes).then(() => {
+                // Flash dark orange to show removal success
+                document.body.style.backgroundColor = '#7c2d12';
+                setTimeout(() => document.body.style.backgroundColor = '', 300);
+                document.getElementById('voteAmount').value = 1;
+            });
+        }
+
         function resetVotes() {
-            if (confirm("Reset the live public database? This will set Abstain to 1 and all others to 0.")) {
-                votesRef.set({ cole: 0, konnor: 0, walker_sos: 0, abstain_sos: 1 });
+            if (confirm("Reset the live public database entirely? All values will go to exactly 0.")) {
+                votesRef.set({ cole: 0, konnor: 0, walker_sos: 0, abstain_sos: 0 });
             }
         }
     </script>
